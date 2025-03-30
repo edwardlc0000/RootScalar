@@ -6,6 +6,7 @@
 #include <functional>
 #include <cmath>
 #include <limits>
+#include <stdexcept>
 
 namespace RootScalar
 {
@@ -33,6 +34,38 @@ namespace RootScalar
 			x = x - f(x) / f_prime;
 		} while (!almost_equal(f(x), 0.0, precision));
 		return x;
+	}
+
+	double bisection(real_func f, double a, double b, int precision, int nmax, int i = 0)
+	{
+		i++;
+
+		if (std::signbit(f(a)) == std::signbit(f(b)))
+		{
+			throw std::invalid_argument("Function values at the interval endpoints must have opposite signs.");
+		}
+
+		double c = (a + b) / 2;
+		if (almost_equal(f(c), 0.0, precision))
+		{
+			return c;
+		}
+
+		if (i < nmax)
+		{
+			if (std::signbit(f(a)) != std::signbit(f(c)))
+			{
+				return bisection(f, a, c, precision, nmax, i);
+			}
+			else
+			{
+				return bisection(f, b, c, precision, nmax, i);
+			}
+		}
+		else
+		{
+			throw std::runtime_error("Maximum number of iterations reached without finding root.");
+		}
 	}
 }
 
