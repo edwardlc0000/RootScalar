@@ -26,16 +26,34 @@ namespace RootScalar
 
 	double newton(real_func f, double x0, int precision, int nmax)
 	{
-		int i = 0;
 		double x = x0;
 		double f_prime;
-		do
+		double pertubation = std::sqrt(std::numeric_limits<double>::epsilon());
+
+		for(int i = 0; i < nmax; i++)
 		{
 			f_prime = derivate(f, x);
-			x = x - f(x) / f_prime;
-			i++;
-		} while (!almost_equal(f(x), 0.0, precision) && i < nmax);
-		return x;
+
+			if (f_prime == 0.0)
+			{
+				x += pertubation;
+				f_prime = derivate(f, x);
+				if (f_prime == 0.0)
+				{
+					throw std::runtime_error("Derivative is zero. No root found.");
+				}
+			}
+
+			double xi = x - f(x) / f_prime;
+
+			if (almost_equal(f(xi), 0.0, precision) || (std::abs(f(xi) - f(x)) < std::pow(10, -precision)))
+			{
+				return xi;
+			}
+
+			x = xi;
+		}
+		throw std::runtime_error("Maximum number of iterations reached without finding root.");
 	}
 
 	double bisection(real_func f, double a, double b, int precision, int nmax, int i = 0)
