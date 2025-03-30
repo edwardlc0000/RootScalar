@@ -24,15 +24,17 @@ namespace RootScalar
 		return (f(x + h) - f(x - h)) / (2.0 * h);
 	}
 
-	double newton(real_func f, double x0, int precision)
+	double newton(real_func f, double x0, int precision, int nmax)
 	{
+		int i = 0;
 		double x = x0;
 		double f_prime;
 		do
 		{
 			f_prime = derivate(f, x);
 			x = x - f(x) / f_prime;
-		} while (!almost_equal(f(x), 0.0, precision));
+			i++;
+		} while (!almost_equal(f(x), 0.0, precision) && i < nmax);
 		return x;
 	}
 
@@ -46,7 +48,7 @@ namespace RootScalar
 		}
 
 		double c = (a + b) / 2;
-		if (almost_equal(f(c), 0.0, precision))
+		if (almost_equal(f(c), 0.0, precision) || (std::abs(b - a) < std::pow(10, -precision)))
 		{
 			return c;
 		}
