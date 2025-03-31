@@ -13,9 +13,9 @@ namespace RootScalar
 	using real_func = std::function<double(double)>;
 	using real_func_derivative = std::function<double(real_func, double)>;
 
-	bool almost_equal(double a, double b, int precision)
+	bool almost_equal(double a, double b, unsigned int precision)
 	{
-		return std::abs(a - b) < std::pow(10, -precision);
+		return std::abs(a - b) < std::pow(10, -static_cast<int>(precision));
 	}
 
 	double derivate(real_func f, double x)
@@ -24,7 +24,7 @@ namespace RootScalar
 		return (f(x + h) - f(x - h)) / (2.0 * h);
 	}
 
-	double newton(real_func f, double x0, int precision, int nmax)
+	double newton(real_func f, double x0, unsigned int precision, int nmax)
 	{
 		double x = x0;
 		double f_prime;
@@ -46,7 +46,7 @@ namespace RootScalar
 
 			double xi = x - f(x) / f_prime;
 
-			if (almost_equal(f(xi), 0.0, precision) || (std::abs(xi - x) < std::pow(10, -precision)))
+			if (almost_equal(f(xi), 0.0, precision) || (std::abs(xi - x) < std::pow(10, -static_cast<int>(precision))))
 			{
 				return xi;
 			}
@@ -56,7 +56,7 @@ namespace RootScalar
 		throw std::runtime_error("Maximum number of iterations reached without finding root.");
 	}
 
-	double bisection(real_func f, double a, double b, int precision, int nmax, int i = 0)
+	double bisection(real_func f, double a, double b, unsigned int precision, int nmax, int i = 0)
 	{
 		i++;
 
@@ -66,7 +66,7 @@ namespace RootScalar
 		}
 
 		double c = (a + b) / 2;
-		if (almost_equal(f(c), 0.0, precision) || (std::abs(b - a) < std::pow(10, -precision)))
+		if (almost_equal(f(c), 0.0, precision) || (std::abs(b - a) < std::pow(10, -static_cast<int>(precision))))
 		{
 			return c;
 		}
@@ -88,7 +88,7 @@ namespace RootScalar
 		}
 	}
 
-	double secant(real_func f, double x0, double x1, int precision, int nmax)
+	double secant(real_func f, double x0, double x1, unsigned int precision, int nmax)
 	{
 		if (f(x1) == f(x0))
 		{
@@ -101,7 +101,7 @@ namespace RootScalar
 			x0 = x1;
 			x1 = xi;
 
-			if (almost_equal(f(x1), 0.0, precision) || (std::abs(x1 - x0) < std::pow(10, -precision)))
+			if (almost_equal(f(x1), 0.0, precision) || (std::abs(x1 - x0) < std::pow(10, -static_cast<int>(precision))))
 			{
 				return x1;
 			}
