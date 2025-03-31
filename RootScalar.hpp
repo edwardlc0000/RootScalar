@@ -46,7 +46,7 @@ namespace RootScalar
 
 			double xi = x - f(x) / f_prime;
 
-			if (almost_equal(f(xi), 0.0, precision) || (std::abs(f(xi) - f(x)) < std::pow(10, -precision)))
+			if (almost_equal(f(xi), 0.0, precision) || (std::abs(xi - x) < std::pow(10, -precision)))
 			{
 				return xi;
 			}
@@ -87,6 +87,29 @@ namespace RootScalar
 			throw std::runtime_error("Maximum number of iterations reached without finding root.");
 		}
 	}
+
+	double secant(real_func f, double x0, double x1, int precision, int nmax)
+	{
+		if (f(x1) == f(x0))
+		{
+			throw std::runtime_error("Division by zero encountered in secant method.");
+		}
+
+		for (int i = 0; i < nmax; i++)
+		{
+			double xi = x1 - f(x1) * ((x1 - x0) / (f(x1) - f(x0)));
+			x0 = x1;
+			x1 = xi;
+
+			if (almost_equal(f(x1), 0.0, precision) || (std::abs(x1 - x0) < std::pow(10, -precision)))
+			{
+				return x1;
+			}
+
+		}
+		throw std::runtime_error("Maximum number of iterations reached without finding root.");
+	}
+
 }
 
 #endif // ROOT_SCALAR_HPP
