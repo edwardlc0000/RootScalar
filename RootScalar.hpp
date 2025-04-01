@@ -30,6 +30,7 @@ namespace RootScalar
 		double x = x0;
 		double f_prime;
 		double pertubation = std::sqrt(std::numeric_limits<double>::epsilon());
+		double tolerane = std::pow(10, -static_cast<int>(precision));
 
 		for(int i = 0; i < nmax; i++)
 		{
@@ -47,7 +48,7 @@ namespace RootScalar
 
 			double xi = x - f(x) / f_prime;
 
-			if (almost_equal(f(xi), 0.0, precision) || (std::abs(xi - x) < std::pow(10, -static_cast<int>(precision))))
+			if (almost_equal(f(xi), 0.0, precision) || (std::abs(xi - x) < tolerance))
 			{
 				return xi;
 			}
@@ -66,8 +67,10 @@ namespace RootScalar
 			throw std::invalid_argument("Function values at the interval endpoints must have opposite signs.");
 		}
 
+		double tolerance = std::pow(10, -static_cast<int>(precision));
+
 		double c = (a + b) / 2;
-		if (almost_equal(f(c), 0.0, precision) || (std::abs(b - a) < std::pow(10, -static_cast<int>(precision))))
+		if (almost_equal(f(c), 0.0, precision) || (std::abs(b - a) < tolerance))
 		{
 			return c;
 		}
@@ -96,13 +99,15 @@ namespace RootScalar
 			throw std::runtime_error("Division by zero encountered in secant method.");
 		}
 
+		double tolerance = std::pow(10, -static_cast<int>(precision));
+
 		for (int i = 0; i < nmax; i++)
 		{
 			double x = x1 - f(x1) * ((x1 - x0) / (f(x1) - f(x0)));
 			x0 = x1;
 			x1 = x;
 
-			if (almost_equal(f(x1), 0.0, precision) || (std::abs(x1 - x0) < std::pow(10, -static_cast<int>(precision))))
+			if (almost_equal(f(x1), 0.0, precision) || (std::abs(x1 - x0) < tolerance))
 			{
 				return x1;
 			}
@@ -117,6 +122,8 @@ namespace RootScalar
 		{
 			throw std::invalid_argument("Function values at the interval endpoints must have opposite signs.");
 		}
+
+		double tolerance = std::pow(10, -static_cast<int>(precision));
 
 		if (f(a) < f(b))
 		{
