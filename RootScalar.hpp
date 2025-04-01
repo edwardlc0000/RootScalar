@@ -6,6 +6,7 @@
 #include <functional>
 #include <cmath>
 #include <limits>
+#include <algorithm>
 #include <stdexcept>
 
 namespace RootScalar
@@ -97,9 +98,9 @@ namespace RootScalar
 
 		for (int i = 0; i < nmax; i++)
 		{
-			double xi = x1 - f(x1) * ((x1 - x0) / (f(x1) - f(x0)));
+			double x = x1 - f(x1) * ((x1 - x0) / (f(x1) - f(x0)));
 			x0 = x1;
-			x1 = xi;
+			x1 = x;
 
 			if (almost_equal(f(x1), 0.0, precision) || (std::abs(x1 - x0) < std::pow(10, -static_cast<int>(precision))))
 			{
@@ -108,6 +109,50 @@ namespace RootScalar
 
 		}
 		throw std::runtime_error("Maximum number of iterations reached without finding root.");
+	}
+
+	double brent(real_func f, double a, double b, unsigned int precision, int nmax)
+	{
+		if (std::signbit(f(a)) == std::signbit(f(b)))
+		{
+			throw std::invalid_argument("Function values at the interval endpoints must have opposite signs.");
+		}
+
+		if (f(a) < f(b))
+		{
+			std::swap(a, b);
+		}
+
+		double c = a;
+		bool mflag = true;
+		double s;
+
+		for (int i = 0; i < nmax; i++)
+		{
+			if ((f(a) != f(c)) && (f(b) != f(c)))
+			{
+				s = 0;
+			}
+			else
+			{
+				s = 0;
+			}
+
+			if (!((((3 * a + b) / 4.0) < s) && (s < b)) ||
+				(mflag && (std::abs(s - b) >= std::abs((b - c) / 2.0))) ||
+				(!mflag && (std::abs(s - b) >= std::abs((c - d) / 2.0)))
+				)
+			{
+				s = (a + b) / 2.0;
+				mflag = true;
+			}
+			else
+			{
+				mflag = false;
+			}
+		}
+
+
 	}
 
 }
