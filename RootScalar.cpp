@@ -1,5 +1,9 @@
-// RootScalar.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+/* RootScalar.cpp : This file contains the 'main' function.Program execution begins and ends there.
+ * 
+ * This file contains examples of the RootScalar functions.
+ * 
+ */ 
+
 
 #include <iostream>
 
