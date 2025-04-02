@@ -133,21 +133,26 @@ namespace RootScalar
 		double c = a;
 		bool mflag = true;
 		double s;
+		double d;
 
 		for (int i = 0; i < nmax; i++)
 		{
 			if ((f(a) != f(c)) && (f(b) != f(c)))
 			{
-				s = 0;
+				s = a * f(b) * f(c) / ((f(a) - f(b)) * (f(a) - f(c))) +
+					b * f(a) * f(c) / ((f(b) - f(a)) * (f(b) - f(c))) +
+					c * f(a) * f(b) / ((f(c) - f(a)) * (f(c) - f(b)));
 			}
 			else
 			{
-				s = 0;
+				s = b - f(b) * ((b - a) / (f(b) - f(a)));
 			}
 
 			if (!((((3 * a + b) / 4.0) < s) && (s < b)) ||
 				(mflag && (std::abs(s - b) >= std::abs((b - c) / 2.0))) ||
-				(!mflag && (std::abs(s - b) >= std::abs((c - d) / 2.0)))
+				(!mflag && (std::abs(s - b) >= std::abs((c - d) / 2.0))) ||
+				(mflag && (std::abs(b - c) < tolerance)) ||
+				(!mflag && (std::abs(c - d) < tolerance))
 				)
 			{
 				s = (a + b) / 2.0;
@@ -157,6 +162,29 @@ namespace RootScalar
 			{
 				mflag = false;
 			}
+
+			d = c;
+			c = b;
+
+			if (std::signbit(f(a)) == std::signbit(f(s)))
+			{
+				a = s;
+			}
+			else
+			{
+				b = s;
+			}
+
+			if (std::abs(f(a)) < std::abs(f(b)))
+			{
+				std::swap(a, b);
+			}
+
+			if (almost_equal(f(b), 0.0, precision) || (std::abs(b - a) < tolerance))
+			{
+				return b;
+			}
+
 		}
 
 
