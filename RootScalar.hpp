@@ -30,7 +30,7 @@ namespace RootScalar
 		double x = x0;
 		double f_prime;
 		double pertubation = std::sqrt(std::numeric_limits<double>::epsilon());
-		double tolerane = std::pow(10, -static_cast<int>(precision));
+		double tolerance = std::pow(10, -static_cast<int>(precision));
 
 		for(int i = 0; i < nmax; i++)
 		{
@@ -186,7 +186,7 @@ namespace RootScalar
 			}
 
 		}
-
+		throw std::runtime_error("Maximum number of iterations reached without finding root.");
 
 	}
 
