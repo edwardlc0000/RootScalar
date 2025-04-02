@@ -128,9 +128,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="RootScalar.cpp" />
+    <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RootScalar.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vcpkg-configuration.json" />
+    <None Include="vcpkg.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
