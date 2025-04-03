@@ -60,7 +60,6 @@ namespace RootScalar
 
 	double bisection(real_func f, double a, double b, unsigned int precision, int nmax, int i = 0)
 	{
-		i++;
 
 		if (std::signbit(f(a)) == std::signbit(f(b)))
 		{
@@ -68,28 +67,27 @@ namespace RootScalar
 		}
 
 		double tolerance = std::pow(10, -static_cast<int>(precision));
+		double c;
 
-		double c = (a + b) / 2;
-		if (almost_equal(f(c), 0.0, precision) || (std::abs(b - a) < tolerance))
+		for (int i = 0; i < nmax; i++)
 		{
-			return c;
-		}
+			c = (a + b) / 2;
+			if (almost_equal(f(c), 0.0, precision) || (std::abs(b - a) < tolerance))
+			{
+				return c;
+			}
 
-		if (i < nmax)
-		{
 			if (std::signbit(f(a)) != std::signbit(f(c)))
 			{
-				return bisection(f, a, c, precision, nmax, i);
+				b = c;
 			}
 			else
 			{
-				return bisection(f, b, c, precision, nmax, i);
+				a = c;
 			}
 		}
-		else
-		{
-			throw std::runtime_error("Maximum number of iterations reached without finding root.");
-		}
+		throw std::runtime_error("Maximum number of iterations reached without finding root.");
+
 	}
 
 	double secant(real_func f, double x0, double x1, unsigned int precision, int nmax)
