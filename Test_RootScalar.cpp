@@ -116,7 +116,55 @@ TEST(RootScalarTest, BisectionMaxIterations)
 		}, std::runtime_error);
 }
 
+// Test case for Brent's method for a valid function
 
+TEST(RootScalarTest, BrentValidFunction)
+{
+	// Function with a known root: f(x) = x^3 - x - 2
+	auto func = [](double x) { return x * x * x - x - 2; };
+
+	double a = 1.0;
+	double b = 2.0;
+	unsigned int precision = 6;
+	int max_iterations = 100;
+
+	double root = RootScalar::brent(func, a, b, precision, max_iterations);
+	EXPECT_NEAR(root, 1.5213797, 1e-6);
+}
+
+// Test case for Brent's method when function values at the interval endpoints do not have opposite signs
+
+TEST(RootScalarTest, BrentSameSignEndpoints)
+{
+	// Function with the same sign at both endpoints: f(x) = x^2 + 1
+	auto func = [](double x) { return x * x + 1; };
+
+	double a = -1.0;
+	double b = 1.0;
+	unsigned int precision = 6;
+	int max_iterations = 100;
+
+	EXPECT_THROW({
+		RootScalar::brent(func, a, b, precision, max_iterations);
+		}, std::invalid_argument);
+}
+
+// Test case for Brent's method when maximum number of iterations is reached without finding root
+
+TEST(RootScalarTest, BrentMaxIterations)
+{
+	// Function with a root: f(x) = x^3 - x - 2
+	auto func = [](double x) { return x * x * x - x - 2; };
+
+	double a = 1.0;
+	double b = 2.0;
+	unsigned int precision = 6;
+	int max_iterations = 1; // Set to a low number to force max iterations
+
+	EXPECT_THROW({
+		RootScalar::brent(func, a, b, precision, max_iterations);
+		}, std::runtime_error);
+}
 
 int main(int argc, char** argv) 
 {
