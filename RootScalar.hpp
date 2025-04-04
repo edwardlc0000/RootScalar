@@ -11,182 +11,240 @@
 
 namespace RootScalar
 {
-	using real_func = std::function<double(double)>;
-	using real_func_derivative = std::function<double(real_func, double)>;
+    using real_func = std::function<double(double)>;
+    using real_func_derivative = std::function<double(real_func, double)>;
 
-	bool almost_equal(double a, double b, unsigned int precision)
-	{
-		return std::abs(a - b) < std::pow(10, -static_cast<int>(precision));
-	}
+    /**
+     * @brief Checks if two floating-point numbers are almost equal.
+     * 
+     * @param a First number.
+     * @param b Second number.
+     * @param precision Number of decimal places to consider.
+     * @return true if the numbers are almost equal, false otherwise.
+     */
+    bool almost_equal(double a, double b, unsigned int precision)
+    {
+        return std::abs(a - b) < std::pow(10, -static_cast<int>(precision));
+    }
 
-	double derivate(real_func f, double x)
-	{
-		double h = std::sqrt(std::numeric_limits<double>::epsilon());
-		return (f(x + h) - f(x - h)) / (2.0 * h);
-	}
+    /**
+     * @brief Computes the numerical derivative of a function at a given point.
+     * 
+     * @param f The function to differentiate.
+     * @param x The point at which to compute the derivative.
+     * @return The numerical derivative of the function at the given point.
+     */
+    double derivate(real_func f, double x)
+    {
+        double h = std::sqrt(std::numeric_limits<double>::epsilon());
+        return (f(x + h) - f(x - h)) / (2.0 * h);
+    }
 
-	double newton(real_func f, double x0, unsigned int precision, int nmax)
-	{
-		double x = x0;
-		double f_prime;
-		double pertubation = std::sqrt(std::numeric_limits<double>::epsilon());
-		double tolerance = std::pow(10, -static_cast<int>(precision));
+    /**
+     * @brief Finds the root of a function using the Newton-Raphson method.
+     * 
+     * @param f The function for which to find the root.
+     * @param x0 Initial guess for the root.
+     * @param precision Number of decimal places to consider for convergence.
+     * @param nmax Maximum number of iterations.
+     * @return The root of the function.
+     * @throws std::runtime_error if the root is not found within the maximum number of iterations.
+     */
+    double newton(real_func f, double x0, unsigned int precision, int nmax)
+    {
+        double x = x0;
+        double f_prime;
+        double pertubation = std::sqrt(std::numeric_limits<double>::epsilon());
+        double tolerance = std::pow(10, -static_cast<int>(precision));
 
-		for(int i = 0; i < nmax; i++)
-		{
-			f_prime = derivate(f, x);
+        for(int i = 0; i < nmax; i++)
+        {
+            f_prime = derivate(f, x);
 
-			if (f_prime == 0.0)
-			{
-				x += pertubation;
-				f_prime = derivate(f, x);
-				if (f_prime == 0.0)
-				{
-					throw std::runtime_error("Derivative is zero. No root found.");
-				}
-			}
+            if (f_prime == 0.0)
+            {
+                x += pertubation;
+                f_prime = derivate(f, x);
+                if (f_prime == 0.0)
+                {
+                    throw std::runtime_error("Derivative is zero. No root found.");
+                }
+            }
 
-			double xi = x - f(x) / f_prime;
+            double xi = x - f(x) / f_prime;
 
-			if (almost_equal(f(xi), 0.0, precision) || (std::abs(xi - x) < tolerance))
-			{
-				return xi;
-			}
+            if (almost_equal(f(xi), 0.0, precision) || (std::abs(xi - x) < tolerance))
+            {
+                return xi;
+            }
 
-			x = xi;
-		}
-		throw std::runtime_error("Maximum number of iterations reached without finding root.");
-	}
+            x = xi;
+        }
+        throw std::runtime_error("Maximum number of iterations reached without finding root.");
+    }
 
-	double bisection(real_func f, double a, double b, unsigned int precision, int nmax, int i = 0)
-	{
+    /**
+     * @brief Finds the root of a function using the bisection method.
+     * 
+     * @param f The function for which to find the root.
+     * @param a The lower bound of the interval.
+     * @param b The upper bound of the interval.
+     * @param precision Number of decimal places to consider for convergence.
+     * @param nmax Maximum number of iterations.
+     * @return The root of the function.
+     * @throws std::invalid_argument if the function values at the interval endpoints have the same sign.
+     * @throws std::runtime_error if the root is not found within the maximum number of iterations.
+     */
+    double bisection(real_func f, double a, double b, unsigned int precision, int nmax, int i = 0)
+    {
+        if (std::signbit(f(a)) == std::signbit(f(b)))
+        {
+            throw std::invalid_argument("Function values at the interval endpoints must have opposite signs.");
+        }
 
-		if (std::signbit(f(a)) == std::signbit(f(b)))
-		{
-			throw std::invalid_argument("Function values at the interval endpoints must have opposite signs.");
-		}
+        double tolerance = std::pow(10, -static_cast<int>(precision));
+        double c;
 
-		double tolerance = std::pow(10, -static_cast<int>(precision));
-		double c;
+        for (int i = 0; i < nmax; i++)
+        {
+            c = (a + b) / 2;
+            if (almost_equal(f(c), 0.0, precision) || (std::abs(b - a) < tolerance))
+            {
+                return c;
+            }
 
-		for (int i = 0; i < nmax; i++)
-		{
-			c = (a + b) / 2;
-			if (almost_equal(f(c), 0.0, precision) || (std::abs(b - a) < tolerance))
-			{
-				return c;
-			}
+            if (std::signbit(f(a)) != std::signbit(f(c)))
+            {
+                b = c;
+            }
+            else
+            {
+                a = c;
+            }
+        }
+        throw std::runtime_error("Maximum number of iterations reached without finding root.");
+    }
 
-			if (std::signbit(f(a)) != std::signbit(f(c)))
-			{
-				b = c;
-			}
-			else
-			{
-				a = c;
-			}
-		}
-		throw std::runtime_error("Maximum number of iterations reached without finding root.");
+    /**
+     * @brief Finds the root of a function using the secant method.
+     * 
+     * @param f The function for which to find the root.
+     * @param x0 First initial guess for the root.
+     * @param x1 Second initial guess for the root.
+     * @param precision Number of decimal places to consider for convergence.
+     * @param nmax Maximum number of iterations.
+     * @return The root of the function.
+     * @throws std::runtime_error if the root is not found within the maximum number of iterations or if division by zero is encountered.
+     */
+    double secant(real_func f, double x0, double x1, unsigned int precision, int nmax)
+    {
+        if (f(x1) == f(x0))
+        {
+            throw std::runtime_error("Division by zero encountered in secant method.");
+        }
 
-	}
+        double tolerance = std::pow(10, -static_cast<int>(precision));
 
-	double secant(real_func f, double x0, double x1, unsigned int precision, int nmax)
-	{
-		if (f(x1) == f(x0))
-		{
-			throw std::runtime_error("Division by zero encountered in secant method.");
-		}
+        for (int i = 0; i < nmax; i++)
+        {
+            double x = x1 - f(x1) * ((x1 - x0) / (f(x1) - f(x0)));
+            x0 = x1;
+            x1 = x;
 
-		double tolerance = std::pow(10, -static_cast<int>(precision));
+            if (almost_equal(f(x1), 0.0, precision) || (std::abs(x1 - x0) < tolerance))
+            {
+                return x1;
+            }
 
-		for (int i = 0; i < nmax; i++)
-		{
-			double x = x1 - f(x1) * ((x1 - x0) / (f(x1) - f(x0)));
-			x0 = x1;
-			x1 = x;
+        }
+        throw std::runtime_error("Maximum number of iterations reached without finding root.");
+    }
 
-			if (almost_equal(f(x1), 0.0, precision) || (std::abs(x1 - x0) < tolerance))
-			{
-				return x1;
-			}
+    /**
+     * @brief Finds the root of a function using Brent's method.
+     * 
+     * @param f The function for which to find the root.
+     * @param a The lower bound of the interval.
+     * @param b The upper bound of the interval.
+     * @param precision Number of decimal places to consider for convergence.
+     * @param nmax Maximum number of iterations.
+     * @return The root of the function.
+     * @throws std::invalid_argument if the function values at the interval endpoints have the same sign.
+     * @throws std::runtime_error if the root is not found within the maximum number of iterations.
+     */
+    double brent(real_func f, double a, double b, unsigned int precision, int nmax)
+    {
+        if (std::signbit(f(a)) == std::signbit(f(b)))
+        {
+            throw std::invalid_argument("Function values at the interval endpoints must have opposite signs.");
+        }
 
-		}
-		throw std::runtime_error("Maximum number of iterations reached without finding root.");
-	}
+        double tolerance = std::pow(10, -static_cast<int>(precision));
 
-	double brent(real_func f, double a, double b, unsigned int precision, int nmax)
-	{
-		if (std::signbit(f(a)) == std::signbit(f(b)))
-		{
-			throw std::invalid_argument("Function values at the interval endpoints must have opposite signs.");
-		}
+        if (f(a) < f(b))
+        {
+            std::swap(a, b);
+        }
 
-		double tolerance = std::pow(10, -static_cast<int>(precision));
+        double c = a;
+        bool mflag = true;
+        double s;
+        double d;
 
-		if (f(a) < f(b))
-		{
-			std::swap(a, b);
-		}
+        for (int i = 0; i < nmax; i++)
+        {
+            if ((f(a) != f(c)) && (f(b) != f(c)))
+            {
+                s = a * f(b) * f(c) / ((f(a) - f(b)) * (f(a) - f(c))) +
+                    b * f(a) * f(c) / ((f(b) - f(a)) * (f(b) - f(c))) +
+                    c * f(a) * f(b) / ((f(c) - f(a)) * (f(c) - f(b)));
+            }
+            else
+            {
+                s = b - f(b) * ((b - a) / (f(b) - f(a)));
+            }
 
-		double c = a;
-		bool mflag = true;
-		double s;
-		double d;
+            if (!((((3 * a + b) / 4.0) < s) && (s < b)) ||
+                (mflag && (std::abs(s - b) >= std::abs((b - c) / 2.0))) ||
+                (!mflag && (std::abs(s - b) >= std::abs((c - d) / 2.0))) ||
+                (mflag && (std::abs(b - c) < tolerance)) ||
+                (!mflag && (std::abs(c - d) < tolerance))
+                )
+            {
+                s = (a + b) / 2.0;
+                mflag = true;
+            }
+            else
+            {
+                mflag = false;
+            }
 
-		for (int i = 0; i < nmax; i++)
-		{
-			if ((f(a) != f(c)) && (f(b) != f(c)))
-			{
-				s = a * f(b) * f(c) / ((f(a) - f(b)) * (f(a) - f(c))) +
-					b * f(a) * f(c) / ((f(b) - f(a)) * (f(b) - f(c))) +
-					c * f(a) * f(b) / ((f(c) - f(a)) * (f(c) - f(b)));
-			}
-			else
-			{
-				s = b - f(b) * ((b - a) / (f(b) - f(a)));
-			}
+            d = c;
+            c = b;
 
-			if (!((((3 * a + b) / 4.0) < s) && (s < b)) ||
-				(mflag && (std::abs(s - b) >= std::abs((b - c) / 2.0))) ||
-				(!mflag && (std::abs(s - b) >= std::abs((c - d) / 2.0))) ||
-				(mflag && (std::abs(b - c) < tolerance)) ||
-				(!mflag && (std::abs(c - d) < tolerance))
-				)
-			{
-				s = (a + b) / 2.0;
-				mflag = true;
-			}
-			else
-			{
-				mflag = false;
-			}
+            if (std::signbit(f(a)) == std::signbit(f(s)))
+            {
+                a = s;
+            }
+            else
+            {
+                b = s;
+            }
 
-			d = c;
-			c = b;
+            if (std::abs(f(a)) < std::abs(f(b)))
+            {
+                std::swap(a, b);
+            }
 
-			if (std::signbit(f(a)) == std::signbit(f(s)))
-			{
-				a = s;
-			}
-			else
-			{
-				b = s;
-			}
+            if (almost_equal(f(b), 0.0, precision) || (std::abs(b - a) < tolerance))
+            {
+                return b;
+            }
 
-			if (std::abs(f(a)) < std::abs(f(b)))
-			{
-				std::swap(a, b);
-			}
+        }
+        throw std::runtime_error("Maximum number of iterations reached without finding root.");
 
-			if (almost_equal(f(b), 0.0, precision) || (std::abs(b - a) < tolerance))
-			{
-				return b;
-			}
-
-		}
-		throw std::runtime_error("Maximum number of iterations reached without finding root.");
-
-	}
+    }
 
 }
 
