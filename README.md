@@ -66,7 +66,9 @@ int main()
     {
         double root = RootScalar::bisection(func, a, b, precision, max_iterations);
         std::cout << "Root: " << root << std::endl;
-    } catch (const std::runtime_error& e) {
+    }
+    catch (const std::runtime_error& e)
+    {
         std::cerr << "Error: " << e.what() << std::endl;
     }
 
