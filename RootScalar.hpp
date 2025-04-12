@@ -23,6 +23,7 @@ namespace RootScalar
 	template <typename T>
 	bool almost_equal(T a, T b, unsigned int precision)
 	{
+		static_assert(std::is_floating_point<T>::value, "T must be a floating-point type.");
 		return std::abs(a - b) < std::pow(10, -static_cast<int>(precision));
 	}
 
@@ -38,6 +39,10 @@ namespace RootScalar
 	template <typename T, typename Function>
 	T derivate(Function f, T x)
 	{
+		static_assert(std::is_floating_point<T>::value, "T must be a floating-point type.");
+		static_assert(std::is_invocable<Function, T>::value, "Function must be invocable with T.");
+		static_assert(std::is_floating_point<typename std::result_of<Function(T)>::type>::value,
+			"Function must return a floating-point type.");
 		T h = std::sqrt(std::numeric_limits<T>::epsilon());
 		return (f(x + h) - f(x - h)) / (2.0 * h);
 	}
@@ -57,6 +62,11 @@ namespace RootScalar
 	template <typename T, typename Function>
 	T newton(Function f, T x0, unsigned int precision, int nmax)
 	{
+		static_assert(std::is_floating_point<T>::value, "T must be a floating-point type.");
+		static_assert(std::is_invocable<Function, T>::value, "Function must be invocable with T.");
+		static_assert(std::is_floating_point<typename std::result_of<Function(T)>::type>::value,
+			"Function must return a floating-point type.");
+
 		T x;
 		T f_prime;
 		T pertubation = std::sqrt(std::numeric_limits<T>::epsilon());
@@ -105,6 +115,11 @@ namespace RootScalar
 	template <typename T, typename Function>
 	T bisection(Function f, T a, T b, unsigned int precision, int nmax)
 	{
+		static_assert(std::is_floating_point<T>::value, "T must be a floating-point type.");
+		static_assert(std::is_invocable<Function, T>::value, "Function must be invocable with T.");
+		static_assert(std::is_floating_point<typename std::result_of<Function(T)>::type>::value,
+			"Function must return a floating-point type.");
+
 		if (std::signbit(f(a)) == std::signbit(f(b)))
 		{
 			throw std::invalid_argument("Function values at the interval endpoints must have opposite signs.");
@@ -149,6 +164,11 @@ namespace RootScalar
 	template <typename T, typename Function>
 	T secant(Function f, T x0, T x1, unsigned int precision, int nmax)
 	{
+		static_assert(std::is_floating_point<T>::value, "T must be a floating-point type.");
+		static_assert(std::is_invocable<Function, T>::value, "Function must be invocable with T.");
+		static_assert(std::is_floating_point<typename std::result_of<Function(T)>::type>::value,
+			"Function must return a floating-point type.");
+
 		if (f(x1) == f(x0))
 		{
 			throw std::runtime_error("Division by zero encountered in secant method.");
@@ -187,6 +207,11 @@ namespace RootScalar
 	template <typename T, typename Function>
 	T brent(Function f, T a, T b, unsigned int precision, int nmax)
 	{
+		static_assert(std::is_floating_point<T>::value, "T must be a floating-point type.");
+		static_assert(std::is_invocable<Function, T>::value, "Function must be invocable with T.");
+		static_assert(std::is_floating_point<typename std::result_of<Function(T)>::type>::value,
+			"Function must return a floating-point type.");
+
 		if (std::signbit(f(a)) == std::signbit(f(b)))
 		{
 			throw std::invalid_argument("Function values at the interval endpoints must have opposite signs.");
