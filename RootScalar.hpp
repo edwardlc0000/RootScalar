@@ -52,33 +52,33 @@ namespace RootScalar
      */
     double newton(real_func f, double x0, unsigned int precision, int nmax)
     {
-        double x = x0;
+        double x;
         double f_prime;
         double pertubation = std::sqrt(std::numeric_limits<double>::epsilon());
         double tolerance = std::pow(10, -static_cast<int>(precision));
 
         for(int i = 0; i < nmax; i++)
         {
-            f_prime = derivate(f, x);
+            f_prime = derivate(f, x0);
 
             if (f_prime == 0.0)
             {
-                x += pertubation;
-                f_prime = derivate(f, x);
+                x0 += pertubation;
+                f_prime = derivate(f, x0);
                 if (f_prime == 0.0)
                 {
                     throw std::runtime_error("Derivative is zero. No root found.");
                 }
             }
 
-            double xi = x - f(x) / f_prime;
+            x = x0 - f(x0) / f_prime;
 
-            if (almost_equal(f(xi), 0.0, precision) || (std::abs(xi - x) < tolerance))
+            if (almost_equal(f(x), 0.0, precision) || (std::abs(x - x0) < tolerance))
             {
-                return xi;
+                return x;
             }
 
-            x = xi;
+            x0 = x;
         }
         throw std::runtime_error("Maximum number of iterations reached without finding root.");
     }
