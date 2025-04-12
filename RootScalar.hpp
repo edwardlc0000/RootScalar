@@ -70,7 +70,6 @@ namespace RootScalar
 		T x;
 		T f_prime;
 		T pertubation = std::sqrt(std::numeric_limits<T>::epsilon());
-		T tolerance = std::pow(10, -static_cast<int>(precision));
 
 		for (int i = 0; i < nmax; i++)
 		{
@@ -88,7 +87,7 @@ namespace RootScalar
 
 			x = x0 - f(x0) / f_prime;
 
-			if (almost_equal(f(x), static_cast<T>(0.0), precision) || (std::abs(x - x0) < tolerance))
+			if (almost_equal(f(x), static_cast<T>(0.0), precision) || almost_equal(x, x0, precision))
 			{
 				return x;
 			}
@@ -124,14 +123,13 @@ namespace RootScalar
 		{
 			throw std::invalid_argument("Function values at the interval endpoints must have opposite signs.");
 		}
-
-		T tolerance = std::pow(10, -static_cast<int>(precision));
+				
 		T c;
 
 		for (int i = 0; i < nmax; i++)
 		{
 			c = (a + b) / 2;
-			if (almost_equal(f(c), static_cast<T>(0.0), precision) || (std::abs(b - a) < tolerance))
+			if (almost_equal(f(c), static_cast<T>(0.0), precision) || almost_equal(a, b, precision))
 			{
 				return c;
 			}
@@ -173,16 +171,14 @@ namespace RootScalar
 		{
 			throw std::runtime_error("Division by zero encountered in secant method.");
 		}
-
-		T tolerance = std::pow(10, -static_cast<int>(precision));
-
+		
 		for (int i = 0; i < nmax; i++)
 		{
 			T x = x1 - f(x1) * ((x1 - x0) / (f(x1) - f(x0)));
 			x0 = x1;
 			x1 = x;
 
-			if (almost_equal(f(x1), static_cast<T>(0.0), precision) || (std::abs(x1 - x0) < tolerance))
+			if (almost_equal(f(x1), static_cast<T>(0.0), precision))
 			{
 				return x1;
 			}
@@ -216,9 +212,7 @@ namespace RootScalar
 		{
 			throw std::invalid_argument("Function values at the interval endpoints must have opposite signs.");
 		}
-
-		T tolerance = std::pow(10, -static_cast<int>(precision));
-
+		
 		if (f(a) < f(b))
 		{
 			std::swap(a, b);
@@ -245,8 +239,8 @@ namespace RootScalar
 			if (!((((3 * a + b) / 4.0) < s) && (s < b)) ||
 				(mflag && (std::abs(s - b) >= std::abs((b - c) / 2.0))) ||
 				(!mflag && (std::abs(s - b) >= std::abs((c - d) / 2.0))) ||
-				(mflag && (std::abs(b - c) < tolerance)) ||
-				(!mflag && (std::abs(c - d) < tolerance)))
+				(mflag && almost_equal(b, c, precision)) ||
+				(!mflag && almost_equal(c, d, precision)))
 			{
 				s = (a + b) / 2.0;
 				mflag = true;
@@ -273,7 +267,7 @@ namespace RootScalar
 				std::swap(a, b);
 			}
 
-			if (almost_equal(f(b), static_cast<T>(0.0), precision) || (std::abs(b - a) < tolerance))
+			if (almost_equal(f(b), static_cast<T>(0.0), precision) || almost_equal(a, b, precision))
 			{
 				return b;
 			}
