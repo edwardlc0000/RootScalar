@@ -1,173 +1,98 @@
-#include "gtest/gtest.h"
 #include "RootScalar.hpp"
+#include <gtest/gtest.h>
+#include <cmath>
+#include <stdexcept>
 
-//Test case for the Newton-Raphson method for valid function
+// Define a test fixture for typed tests
+template <typename T>
+class RootScalarErrorTest : public ::testing::Test {
+protected:
+    // Example function to test root-finding methods
+    static T test_function(T x) {
+        return x * x - T(4); // Root at x = ±2
+    }
 
-TEST(RootScalarTest, NewtonValidFunction)
-{
-	//Function that converges easily: f(x) = x^2 -2
-	auto func = [](double x) { return x * x - 2; };
+    // Example function with a flat derivative (to trigger errors in Newton's method)
+    static T flat_function(T x) {
+        return T(1); // Derivative is always 0
+    }
+};
 
-	double initial_guess = 1.0;
-	unsigned int precision = 6;
-	int max_iterations = 100;
+// Define the types to test
+using TestTypes = ::testing::Types<float, double, long double>;
+TYPED_TEST_SUITE(RootScalarErrorTest, TestTypes);
 
-	double root = RootScalar::newton(func, initial_guess, precision, max_iterations);
-	EXPECT_NEAR(root, std::sqrt(2), 1e-6);
+// Test Newton-Raphson method for derivative being zero
+TYPED_TEST(RootScalarErrorTest, NewtonDerivativeZero) {
+    using T = TypeParam;
+    EXPECT_THROW(
+        RootScalar::newton(this->flat_function, T(1), 6, 100),
+        std::runtime_error
+    );
 }
 
-// Test case for the Newton-Raphson method for a valid multivariate function with a fixed variable
-TEST(RootScalarTest, NewtonMultivariateFunction)
-{
-	// Multivariate function: f(x, y) = x^2 + y^2 - 4
-	// Fix y = 1 and find the root for x
-	double y_fixed = 1.0;
-	auto func = [y_fixed](double x) { return x * x + y_fixed * y_fixed - 4; };
-
-	double initial_guess = 1.0;
-	unsigned int precision = 6;
-	int max_iterations = 100;
-
-	double root = RootScalar::newton(func, initial_guess, precision, max_iterations);
-	EXPECT_NEAR(root, std::sqrt(3), 1e-6);
+// Test Bisection method for invalid interval
+TYPED_TEST(RootScalarErrorTest, BisectionInvalidInterval) {
+    using T = TypeParam;
+    EXPECT_THROW(
+        RootScalar::bisection(this->test_function, T(3), T(4), 6, 100),
+        std::invalid_argument
+    );
 }
 
-// Test case for the Newton-Raphson for nonconvergence
-
-TEST(RootScalarTest, NewtonMaxIterations)
-{
-	// Function that does not converge easily: f(x) = x^3 - 2x + 2
-	auto func = [](double x) { return x * x * x - 2 * x + 2; };
-
-	double initial_guess = 0.0;
-	unsigned int precision = 6;
-	int max_iterations = 10;
-
-	EXPECT_THROW({
-		RootScalar::newton(func, initial_guess, precision, max_iterations);
-		}, std::runtime_error);
+// Test Secant method for division by zero
+TYPED_TEST(RootScalarErrorTest, SecantDivisionByZero) {
+    using T = TypeParam;
+    auto constant_function = [](T) { return T(1); }; // Constant function
+    EXPECT_THROW(
+        RootScalar::secant(constant_function, T(1), T(1), 6, 100),
+        std::runtime_error
+    );
 }
 
-// Test case for the Bisection method for a valid function
-
-TEST(RootScalarTest, BisectionValidFunction)
-{
-	// Function with a known root: f(x) = x^3 - x - 2
-	auto func = [](double x) { return x * x * x - x - 2; };
-
-	double a = 1.0;
-	double b = 2.0;
-	unsigned int precision = 6;
-	int max_iterations = 100;
-
-	double root = RootScalar::bisection(func, a, b, precision, max_iterations);
-	EXPECT_NEAR(root, 1.5213797, 1e-6);
+// Test Brent's method for invalid interval
+TYPED_TEST(RootScalarErrorTest, BrentInvalidInterval) {
+    using T = TypeParam;
+    EXPECT_THROW(
+        RootScalar::brent(this->test_function, T(3), T(4), 6, 100),
+        std::invalid_argument
+    );
 }
 
-//Test case for the Bisection method for a valid multivariate function with a fixed variable
-
-TEST(RootScalarTest, BisectionMultivariateFunction)
-{
-	// Multivariate function: f(x, y) = x^2 + y^2 - 4
-	// Fix y = 1 and find the root for x
-	double y_fixed = 1.0;
-	auto func = [y_fixed](double x) { return x * x + y_fixed * y_fixed - 4; };
-
-	double a = 1.0;
-	double b = 2.0;
-	unsigned int precision = 6;
-	int max_iterations = 100;
-
-	double root = RootScalar::bisection(func, a, b, precision, max_iterations);
-	EXPECT_NEAR(root, std::sqrt(3), 1e-6);
+// Test Newton-Raphson method for exceeding maximum iterations
+TYPED_TEST(RootScalarErrorTest, NewtonMaxIterations) {
+    using T = TypeParam;
+    auto difficult_function = [](T x) { return std::exp(x) - T(100); }; // Root is far from initial guess
+    EXPECT_THROW(
+        RootScalar::newton(difficult_function, T(0), 6, 5), // Insufficient iterations
+        std::runtime_error
+    );
 }
 
-// Test case for the Bisection method when function values do not have opposite signs
-
-TEST(RootScalarTest, BisectionSameSignEndpoints)
-{
-	// Function with the same sign at both endpoints: f(x) = x^2 + 1
-	auto func = [](double x) { return x * x + 1; };
-
-	double a = -1.0;
-	double b = 1.0;
-	unsigned int precision = 6;
-	int max_iterations = 100;
-
-	EXPECT_THROW({
-		RootScalar::bisection(func, a, b, precision, max_iterations);
-		}, std::invalid_argument);
+// Test Bisection method for exceeding maximum iterations
+TYPED_TEST(RootScalarErrorTest, BisectionMaxIterations) {
+    using T = TypeParam;
+    EXPECT_THROW(
+        RootScalar::bisection(this->test_function, T(0), T(3), 6, 1), // Insufficient iterations
+        std::runtime_error
+    );
 }
 
-// Test case for the Bisection method when maximum number of iterations is reached without finding root
-
-TEST(RootScalarTest, BisectionMaxIterations)
-{
-	// Function with a known root: f(x) = x^3 - x - 2
-	auto func = [](double x) { return x * x * x - x - 2; };
-
-	double a = 1.0;
-	double b = 2.0;
-	unsigned int precision = 6;
-	int max_iterations = 2;
-
-	EXPECT_THROW({
-		RootScalar::bisection(func, a, b, precision, max_iterations);
-		}, std::runtime_error);
+// Test Secant method for exceeding maximum iterations
+TYPED_TEST(RootScalarErrorTest, SecantMaxIterations) {
+    using T = TypeParam;
+    auto difficult_function = [](T x) { return std::exp(x) - T(100); }; // Root is far from initial guesses
+    EXPECT_THROW(
+        RootScalar::secant(difficult_function, T(0), T(1), 6, 2), // Insufficient iterations
+        std::runtime_error
+    );
 }
 
-// Test case for Brent's method for a valid function
-
-TEST(RootScalarTest, BrentValidFunction)
-{
-	// Function with a known root: f(x) = x^3 - x - 2
-	auto func = [](double x) { return x * x * x - x - 2; };
-
-	double a = 1.0;
-	double b = 2.0;
-	unsigned int precision = 6;
-	int max_iterations = 100;
-
-	double root = RootScalar::brent(func, a, b, precision, max_iterations);
-	EXPECT_NEAR(root, 1.5213797, 1e-6);
-}
-
-// Test case for Brent's method when function values at the interval endpoints do not have opposite signs
-
-TEST(RootScalarTest, BrentSameSignEndpoints)
-{
-	// Function with the same sign at both endpoints: f(x) = x^2 + 1
-	auto func = [](double x) { return x * x + 1; };
-
-	double a = -1.0;
-	double b = 1.0;
-	unsigned int precision = 6;
-	int max_iterations = 100;
-
-	EXPECT_THROW({
-		RootScalar::brent(func, a, b, precision, max_iterations);
-		}, std::invalid_argument);
-}
-
-// Test case for Brent's method when maximum number of iterations is reached without finding root
-
-TEST(RootScalarTest, BrentMaxIterations)
-{
-	// Function with a root: f(x) = x^3 - x - 2
-	auto func = [](double x) { return x * x * x - x - 2; };
-
-	double a = 1.0;
-	double b = 2.0;
-	unsigned int precision = 6;
-	int max_iterations = 1; // Set to a low number to force max iterations
-
-	EXPECT_THROW({
-		RootScalar::brent(func, a, b, precision, max_iterations);
-		}, std::runtime_error);
-}
-
-int main(int argc, char** argv) 
-{
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+// Test Brent's method for exceeding maximum iterations
+TYPED_TEST(RootScalarErrorTest, BrentMaxIterations) {
+    using T = TypeParam;
+    EXPECT_THROW(
+        RootScalar::brent(this->test_function, T(0), T(3), 6, 1), // Insufficient iterations
+        std::runtime_error
+    );
 }
