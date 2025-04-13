@@ -60,7 +60,7 @@ namespace RootScalar
 	 * @throws std::runtime_error If the derivative is zero or the maximum number of iterations is reached.
 	 */
 	template <typename T, typename Function>
-	T newton(Function f, T x0, unsigned int precision, int nmax)
+	T newton(Function f, T x0, unsigned int precision, unsigned int nmax)
 	{
 		static_assert(std::is_floating_point<T>::value, "T must be a floating-point type.");
 		static_assert(std::is_invocable<Function, T>::value, "Function must be invocable with T.");
@@ -71,7 +71,7 @@ namespace RootScalar
 		T f_prime;
 		T pertubation = std::sqrt(std::numeric_limits<T>::epsilon());
 
-		for (int i = 0; i < nmax; i++)
+		for (unsigned int i = 0; i < nmax; i++)
 		{
 			f_prime = derivate(f, x0);
 
@@ -112,7 +112,7 @@ namespace RootScalar
 	 * @throws std::runtime_error If the maximum number of iterations is reached.
 	 */
 	template <typename T, typename Function>
-	T bisection(Function f, T a, T b, unsigned int precision, int nmax)
+	T bisection(Function f, T a, T b, unsigned int precision, unsigned int nmax)
 	{
 		static_assert(std::is_floating_point<T>::value, "T must be a floating-point type.");
 		static_assert(std::is_invocable<Function, T>::value, "Function must be invocable with T.");
@@ -126,7 +126,7 @@ namespace RootScalar
 				
 		T c;
 
-		for (int i = 0; i < nmax; i++)
+		for (unsigned int i = 0; i < nmax; i++)
 		{
 			c = (a + b) / 2;
 			if (almost_equal(f(c), static_cast<T>(0.0), precision) || almost_equal(a, b, precision))
@@ -160,7 +160,7 @@ namespace RootScalar
 	 * @throws std::runtime_error If division by zero is encountered or the maximum number of iterations is reached.
 	 */
 	template <typename T, typename Function>
-	T secant(Function f, T x0, T x1, unsigned int precision, int nmax)
+	T secant(Function f, T x0, T x1, unsigned int precision, unsigned int nmax)
 	{
 		static_assert(std::is_floating_point<T>::value, "T must be a floating-point type.");
 		static_assert(std::is_invocable<Function, T>::value, "Function must be invocable with T.");
@@ -172,7 +172,7 @@ namespace RootScalar
 			throw std::runtime_error("Division by zero encountered in secant method.");
 		}
 		
-		for (int i = 0; i < nmax; i++)
+		for (unsigned int i = 0; i < nmax; i++)
 		{
 			T x = x1 - f(x1) * ((x1 - x0) / (f(x1) - f(x0)));
 			x0 = x1;
@@ -201,7 +201,7 @@ namespace RootScalar
 	 * @throws std::runtime_error If the maximum number of iterations is reached without finding a root.
 	 */
 	template <typename T, typename Function>
-	T brent(Function f, T a, T b, unsigned int precision, int nmax)
+	T brent(Function f, T a, T b, unsigned int precision, unsigned int nmax)
 	{
 		static_assert(std::is_floating_point<T>::value, "T must be a floating-point type.");
 		static_assert(std::is_invocable<Function, T>::value, "Function must be invocable with T.");
