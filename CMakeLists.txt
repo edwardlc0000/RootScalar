@@ -1,4 +1,4 @@
-project(my_project)
+project(RootScalar)
 
 # GoogleTest requires at least C++17
 set(CMAKE_CXX_STANDARD 17)
